@@ -8,13 +8,15 @@ SetWorkingDir %A_ScriptDir%
 #include <TapHoldManager>
 #include <InterceptionTapHold>
 
-
+; Needed for WinActive working
 SetTitleMatchMode, 2
 
 AHI := new AutoHotInterception()
 
+; Get keyboardId from Monitor.ahk
 keyboardId := AHI.GetKeyboardId(0x13BA, 0x0001)
 
+; Subscribe to keys
 ITH1 := new InterceptionTapHold(AHI, keyboardId)
 ITH1.Add("NumpadAdd", Func("volumeUp"))
 ITH1.Add("NumpadSub", Func("volumeDown"))
@@ -22,57 +24,65 @@ ITH1.Add("NumpadEnter", Func("PanicButton"))
 ITH1.Add("NumpadIns", Func("button0"))
 
 
+; Debug attributes for key
+Debug(isHold, taps, state){
+	ToolTip % "up`n" (isHold ? "HOLD" : "TAP") "`nTaps: " taps "`nState: " state
+}
+
+; NumpadIns 82
 button0(isHold, taps, state){
 	if (!isHold) & (state) & (taps=1){
         Send {LAlt Down}{Space}{LAlt Up}
     }
 }
-Debug(isHold, taps, state){
-	ToolTip % "up`n" (isHold ? "HOLD" : "TAP") "`nTaps: " taps "`nState: " state
-}
 
+; NumpadEnter 284
 PanicButton(isHold, taps, state){
-   
-        if (!isHold) & (state) & (taps=1){
-            Send {LWin Down}{d}{LWin Up}
-            ToolTip % "Panic"
-            SoundSet, 1, , Mute 
-            SetTimer, RemovePanic, -2000
-            return
-            RemovePanic:
-            ToolTip
-            return
-        }
-        if (!isHold) & (taps=2) & (state){	
-		  DllCall("LockWorkStation")
+    if (!isHold) & (state) & (taps=1){
+        Send {LWin Down}{d}{LWin Up}
+        ToolTip % "Panic"
+        SoundSet, 1, , Mute 
+        SetTimer, RemovePanic, -2000
+        return
+        RemovePanic:
+        ToolTip
+        return
+    }
+    if (!isHold) & (taps=2) & (state){	
+        ; Locks Windows
+        DllCall("LockWorkStation")
         return
     } 
     if (!state){ 
-       
+        ;do nothing
     }
 }
 
+; NumpadAdd 78
 volumeUp(isHold, taps, state){
-	if (isHold=0) & (taps=1) & (state){	
-		SoundSet, +10
+    ; Single Tap, no hold
+    if (isHold=0) & (taps=1) & (state){	
+        SoundSet, +10
         SoundGet, system_volume
-		ToolTip % "+10 V, "  system_volume
+        ToolTip % "+10 V, "  system_volume
         SetTimer, RemoveVolumePlusToolTip, -2000
         return
         RemoveVolumePlusToolTip:
         ToolTip
         return
     } 
+    ; Single Tap and Hold
     if (isHold=1) & (taps=1) & (state){	
-		SoundSet, 0, , Mute
+        SoundSet, 0, , Mute
         SoundGet, system_volume
-		ToolTip % "UnMuted" 
+        ToolTip % "UnMuted" 
         SetTimer, RemoveUnMutedTooltip, -2000
         return
         RemoveUnMutedTooltip:
         ToolTip
         return
     } 
+    ; Double tap, no hold
     if (isHold=0) & (taps=2) & (state){	
         SoundSet 50
         ToolTip % "Volume 50"
@@ -83,18 +93,19 @@ volumeUp(isHold, taps, state){
         ToolTip
         return
     } 
-        if (!state){ 
-       
+    if (!state){ 
+        ;do nothing
     }
-    
 }
 
-volumeDown(isHold, taps, state){
 
-if (isHold=0) & (taps=1) & (state){	
-		SoundSet, -10
+; NumpadSub 74
+volumeDown(isHold, taps, state){
+    ; Single Tap, no hold
+    if (isHold=0) & (taps=1) & (state){	
+        SoundSet, -10
         SoundGet, system_volume
-		ToolTip % "-10 V, "  system_volume
+        ToolTip % "-10 V, "  system_volume
         SetTimer, RemoveVolumeDownToolTip, -2000
         return
         RemoveVolumeDownToolTip:
@@ -102,16 +113,19 @@ if (isHold=0) & (taps=1) & (state){
         return
     } 
 
+     ; Single Tap and Hold
     if (isHold=1) & (taps=1) & (state){	
-		SoundSet, 1, , Mute
+        SoundSet, 1, , Mute
         SoundGet, system_volume
-		ToolTip % "Muted" 
+        ToolTip % "Muted" 
         SetTimer, RemoveMutedTooltip, -2000
         return
         RemoveMutedTooltip:
         ToolTip
         return
     } 
+
+    ; Double tap, no hold
     if (isHold=0) & (taps=2) & (state){	
         SoundSet 0
         ToolTip % "Volume 0"
@@ -122,8 +136,9 @@ if (isHold=0) & (taps=1) & (state){
         ToolTip
         return
     } 
-        if (!state){
-       
+
+    if (!state){
+        ;do nothing
     }
 }
 
