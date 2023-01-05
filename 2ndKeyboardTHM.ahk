@@ -21,8 +21,15 @@ ITH1 := new InterceptionTapHold(AHI, keyboardId)
 ITH1.Add("NumpadAdd", Func("volumeUp"))
 ITH1.Add("NumpadSub", Func("volumeDown"))
 ITH1.Add("NumpadEnter", Func("PanicButton"))
+ITH1.Add("NumpadDel", Func("NumpadDel"))
 ITH1.Add("NumpadIns", Func("button0"))
 
+NumpadDel(isHold, taps, state){
+    if (!isHold) & (state) & (taps=1){
+        Run firefox.exe -no-remote -p "vpn"
+        return
+    }
+}
 
 ; Debug attributes for key
 Debug(isHold, taps, state){
